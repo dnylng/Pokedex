@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import AVFoundation
 
 class PokedexVC: UIViewController, UICollectionViewDelegate, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
     
@@ -15,12 +16,16 @@ class PokedexVC: UIViewController, UICollectionViewDelegate, UICollectionViewDat
     // An array of pokemon
     var pokeArray = [Pokemon]()
     
+    // Playing BG music
+    var musicPlayer: AVAudioPlayer!
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
         collection.delegate = self
         collection.dataSource = self
         
+        initAudio()
         parsePokemonCSV()
     }
 
@@ -45,6 +50,19 @@ class PokedexVC: UIViewController, UICollectionViewDelegate, UICollectionViewDat
             print("Poke Array Count: \(pokeArray.count)")
         } catch let err as NSError {
             // If error is found, then csv file is at fault
+            print(err.debugDescription)
+        }
+    }
+    
+    func initAudio() {
+        let path = Bundle.main.path(forResource: "music", ofType: "mp3")
+        do {
+            musicPlayer = try AVAudioPlayer(contentsOf: URL(string: path!)!)
+            musicPlayer.prepareToPlay()
+            musicPlayer.numberOfLoops = -1
+            musicPlayer.volume = 0.1
+            musicPlayer.play()
+        } catch let err as NSError {
             print(err.debugDescription)
         }
     }
@@ -80,5 +98,15 @@ class PokedexVC: UIViewController, UICollectionViewDelegate, UICollectionViewDat
         return CGSize(width: 105, height: 105)
     }
     
+    @IBAction func musicBtnPressed(_ sender: UIButton) {
+        if musicPlayer.isPlaying {
+            musicPlayer.pause()
+            // Set the button transparent
+            sender.alpha = 0.2
+        } else {
+            musicPlayer.play()
+            sender.alpha = 1.0
+        }
+    }
 }
 
