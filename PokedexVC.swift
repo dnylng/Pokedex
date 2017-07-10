@@ -9,21 +9,36 @@
 import UIKit
 import AVFoundation
 
-class PokedexVC: UIViewController, UICollectionViewDelegate, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
+class PokedexVC: UIViewController, UICollectionViewDelegate, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout, UISearchBarDelegate {
     
     @IBOutlet weak var collection: UICollectionView!
 
+    @IBOutlet weak var searchBar: UISearchBar!
+    
     // An array of pokemon
     var pokeArray = [Pokemon]()
     
     // Playing BG music
     var musicPlayer: AVAudioPlayer!
     
+    // Search results of the pokemon
+    var filteredPokemon = [Pokemon]()
+    
+    // Searching or not
+    var inSearchMode = false
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
         collection.delegate = self
         collection.dataSource = self
+        searchBar.delegate = self
+        
+        searchBar.returnKeyType = UIReturnKeyType.done
+        
+        // Gesture recognition to close the keyboard
+        let tap: UITapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(self.dismissKeyboard))
+        view.addGestureRecognizer(tap)
         
         initAudio()
         parsePokemonCSV()
@@ -70,8 +85,17 @@ class PokedexVC: UIViewController, UICollectionViewDelegate, UICollectionViewDat
     // Reusable cell behavior
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         if let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "PokeCell", for: indexPath) as? PokeCell {
+         
+            // Display filtered/unfiltered pokemon
+            let pokemon: Pokemon!
+            if inSearchMode {
+                // Show filtered pokemon
+                pokemon = filteredPokemon[indexPath.row]
+            } else {
+                // Show all of the pokemon
+                pokemon = pokeArray[indexPath.row]
+            }
             
-            let pokemon = pokeArray[indexPath.row]
             cell.configureCell(pokemon: pokemon)
             
             return cell
@@ -82,11 +106,15 @@ class PokedexVC: UIViewController, UICollectionViewDelegate, UICollectionViewDat
     
     // Selected cell behavior
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        
+        // When selected a cell, make the keyboard disappear
+        searchBar.endEditing(true)
     }
     
     // Number of rows in the collection
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+        if inSearchMode {
+            return filteredPokemon.count
+        }
         return pokeArray.count
     }
     
@@ -106,6 +134,44 @@ class PokedexVC: UIViewController, UICollectionViewDelegate, UICollectionViewDat
         } else {
             musicPlayer.play()
             sender.alpha = 1.0
+        }
+    }
+    
+    // Closes the keyboard when return is pressed in search
+    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
+        searchBar.endEditing(true)
+    }
+    
+    // Closes the keyboard when dragging the screen
+    func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
+        searchBar.endEditing(true)
+    }
+    
+    // Closes the keyboard when cancel button pressed
+    func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {
+        searchBar.endEditing(true)
+    }
+    
+    // Closes the keyboard when tapped out of search bar
+    func dismissKeyboard() {
+        searchBar.endEditing(true)
+    }
+    
+    // Determines whether there is text in the search bar to filter
+    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+        if searchBar.text == nil || searchBar.text == "" {
+            // If not searching, then revert to full list of pokemon
+            inSearchMode = false
+            collection.reloadData()
+            
+            // Closes the keyboard when done searching
+            searchBar.endEditing(true)
+        } else {
+            inSearchMode = true
+            
+            // Filter the pokeArray by the search string
+            filteredPokemon = pokeArray.filter({$0.name.localizedStandardRange(of: searchBar.text!) != nil})
+            collection.reloadData()
         }
     }
 }
