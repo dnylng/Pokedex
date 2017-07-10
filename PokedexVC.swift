@@ -38,6 +38,7 @@ class PokedexVC: UIViewController, UICollectionViewDelegate, UICollectionViewDat
         
         // Gesture recognition to close the keyboard
         let tap: UITapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(self.dismissKeyboard))
+        tap.cancelsTouchesInView = false
         view.addGestureRecognizer(tap)
         
         initAudio()
@@ -108,6 +109,31 @@ class PokedexVC: UIViewController, UICollectionViewDelegate, UICollectionViewDat
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         // When selected a cell, make the keyboard disappear
         searchBar.endEditing(true)
+        
+        var pokemon: Pokemon!
+        
+        if inSearchMode {
+            pokemon = filteredPokemon[indexPath.row]
+        } else {
+            pokemon = pokeArray[indexPath.row]
+        }
+        
+        performSegue(withIdentifier: "PokeDetailVC", sender: pokemon)
+    }
+    
+    // Setup the segue to pass info between VC's
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        if segue.identifier == "PokeDetailVC" {
+            
+            // Set the destination to PokeDetailVC
+            if let detailVC = segue.destination as? PokeDetailVC {
+                
+                // Set the info being sent as a type of Pokemon and set that var in the detailVC
+                if let pokemon = sender as? Pokemon {
+                    detailVC.pokemon = pokemon
+                }
+            }
+        }
     }
     
     // Number of rows in the collection
