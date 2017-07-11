@@ -36,7 +36,7 @@ class PokedexVC: UIViewController, UICollectionViewDelegate, UICollectionViewDat
         
         searchBar.returnKeyType = UIReturnKeyType.done
         
-        // Gesture recognition to close the keyboard
+        // Gesture recognition to close the keyboard if tapped out of keyboard
         let tap: UITapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(self.dismissKeyboard))
         tap.cancelsTouchesInView = false
         view.addGestureRecognizer(tap)
