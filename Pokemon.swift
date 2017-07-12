@@ -123,6 +123,29 @@ class Pokemon {
 //                print(self._height)
 //                print(self._attack)
 //                print(self._defense)
+                
+                // Grab the description from dict
+                
+                
+                // Grab the types array from dict
+                if let types = dict["types"] as? [Dictionary<String, String>], types.count > 0 {
+                    for i in 0..<types.count {
+                        // If not 1 type, append other type
+                        if i > 0 {
+                            if let name = types[i]["name"] {
+                                self._type.append("/\(name.capitalized)")
+                            }
+                        } else {
+                            // Only 1 type
+                            if let name = types[i]["name"] {
+                                self._type = name.capitalized
+                            }
+                        }
+                    }
+//                    print("Type: \(self._type!)")
+                } else {
+                    self._type = ""
+                }
             }
             completed()
         }

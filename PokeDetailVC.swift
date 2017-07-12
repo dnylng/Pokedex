@@ -28,7 +28,18 @@ class PokeDetailVC: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
+        // Load the pokemon name
         nameLbl.text = pokemon.name
+        
+        // Load in the proper pokemon images
+        let img = UIImage(named: "\(pokemon.pokedexId)")
+        mainImg.image = img
+        currEvoImg.image = img
+        if true {
+            // If there is a next evolution, then grab the next evo img
+            let nextImg = UIImage(named: "\(pokemon.pokedexId+1)")
+            nextEvoImg.image = nextImg
+        }
         
         pokemon.downloadPokemonDetail {
             // Only be run after download is complete... update the UI
@@ -47,5 +58,6 @@ class PokeDetailVC: UIViewController {
         defLbl.text = pokemon.defense
         heightLbl.text = pokemon.height
         weightLbl.text = pokemon.weight
+        typeLbl.text = pokemon.type
     }
 }
