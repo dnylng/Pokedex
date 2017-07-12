@@ -29,9 +29,23 @@ class PokeDetailVC: UIViewController {
         super.viewDidLoad()
 
         nameLbl.text = pokemon.name
+        
+        pokemon.downloadPokemonDetail {
+            // Only be run after download is complete... update the UI
+            self.updateUI()
+        }
     }
     
     @IBAction func backBtnPressed(_ sender: Any) {
         dismiss(animated: true, completion: nil)
+    }
+    
+    // Updates the information on the detailed pokemon screen
+    func updateUI() {
+        pokedexLbl.text = "\(pokemon.pokedexId)"
+        atkLbl.text = pokemon.attack
+        defLbl.text = pokemon.defense
+        heightLbl.text = pokemon.height
+        weightLbl.text = pokemon.weight
     }
 }

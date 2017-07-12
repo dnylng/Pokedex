@@ -63,7 +63,7 @@ class PokedexVC: UIViewController, UICollectionViewDelegate, UICollectionViewDat
                 let poke = Pokemon(name: pokeName, pokedexId: pokeId)
                 pokeArray.append(poke)
             }
-            print("Poke Array Count: \(pokeArray.count)")
+//            print("Poke Array Count: \(pokeArray.count)")
         } catch let err as NSError {
             // If error is found, then csv file is at fault
             print(err.debugDescription)
