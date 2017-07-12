@@ -20,6 +20,9 @@ class Pokemon {
     private var _weight: String!
     private var _nextEvoTxt: String!
     private var _pokemonURL: String!
+    private var _nextEvoName: String!
+    private var _nextEvoId: String!
+    private var _nextEvoLvl: String!
     
     var name: String {
         if let name = self._name {
@@ -84,6 +87,27 @@ class Pokemon {
         return ""
     }
     
+    var nextEvoName: String {
+        if let nextEvoName = self._nextEvoName {
+            return nextEvoName
+        }
+        return ""
+    }
+    
+    var nextEvoId: String {
+        if let nextEvoId = self._nextEvoId {
+            return nextEvoId
+        }
+        return ""
+    }
+    
+    var nextEvoLvl: String {
+        if let nextEvoLvl = self._nextEvoLvl {
+            return nextEvoLvl
+        }
+        return ""
+    }
+    
     init(name: String, pokedexId: Int) {
         self._name = name.capitalized
         self._pokedexId = pokedexId
@@ -124,20 +148,40 @@ class Pokemon {
 //                print(self._attack)
 //                print(self._defense)
                 
-                // Grab the description from dict
-                
+                // Grab the description array from dict
+                if let descArr = dict["descriptions"] as? [Dictionary<String, String>], descArr.count > 0 {
+                    // Grab the url that links to the pokemon description
+                    if let url = descArr[0]["resource_uri"] {
+                        let fullUrl = "\(URL_BASE)\(url)"
+                        
+                        // Request JSON info for desc
+                        Alamofire.request(fullUrl).responseJSON(completionHandler: { (response) in
+                            // Now we need to extract the description
+                            if let descDict = response.result.value as? Dictionary<String, AnyObject> {
+                                if let description = descDict["description"] as? String {
+//                                    print(description)
+                                    let newDesc = description.replacingOccurrences(of: "POKMON", with: "Pokemon")
+                                    self._description = newDesc
+                                }
+                            }
+                            completed()
+                        })
+                    }
+                } else {
+                    self._description = ""
+                }
                 
                 // Grab the types array from dict
-                if let types = dict["types"] as? [Dictionary<String, String>], types.count > 0 {
-                    for i in 0..<types.count {
+                if let typesArr = dict["types"] as? [Dictionary<String, String>], typesArr.count > 0 {
+                    for i in 0..<typesArr.count {
                         // If not 1 type, append other type
                         if i > 0 {
-                            if let name = types[i]["name"] {
+                            if let name = typesArr[i]["name"] {
                                 self._type.append("/\(name.capitalized)")
                             }
                         } else {
                             // Only 1 type
-                            if let name = types[i]["name"] {
+                            if let name = typesArr[i]["name"] {
                                 self._type = name.capitalized
                             }
                         }
@@ -146,6 +190,40 @@ class Pokemon {
                 } else {
                     self._type = ""
                 }
+                
+                // Evolutions info
+                if let evoArr = dict["evolutions"] as? [Dictionary<String, AnyObject>], evoArr.count > 0 {
+                    // Grab next evolution name
+                    if let nextEvo = evoArr[0]["to"] as? String {
+                        
+                        // Filter out mega evolutions
+                        if nextEvo.range(of: "mega") == nil {
+                            self._nextEvoName = nextEvo.capitalized
+                        }
+                    }
+                    
+                    // Grab the id of the next evo by using resource URI
+                    if let uri = evoArr[0]["resource_uri"] as? String {
+                        let newStr = uri.replacingOccurrences(of: "/api/v1/pokemon/", with: "")
+                        let nextEvoId = newStr.replacingOccurrences(of: "/", with: "")
+                        
+                        self._nextEvoId = nextEvoId
+                    }
+                    
+                    // Grab the evo lvl
+                    if let lvlExist = evoArr[0]["level"] {
+                        if let lvl = lvlExist as? Int {
+                            self._nextEvoLvl = "\(lvl)"
+                        }
+                    } else {
+                        self._nextEvoLvl = ""
+                    }
+                    
+//                    print("Evo Lvl: \(self._nextEvoLvl!)")
+//                    print("Evo Name: \(self.nextEvoName)")
+//                    print("Evo Id: \(self.nextEvoId)")
+                }
+                
             }
             completed()
         }
